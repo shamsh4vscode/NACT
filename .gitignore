@@ -1,0 +1,7 @@
+.pytest_cache/
+**/__pycache__/
+**/.next/
+**/node_modules/
+frontend/next-env.d.ts
+frontend/tsconfig.json
+frontend/package-lock.json

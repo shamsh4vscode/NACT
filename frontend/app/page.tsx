@@ -4,16 +4,53 @@ import { useEffect, useState } from "react";
 import { Activity, Network, ShieldCheck, GitPullRequest, Terminal, Bell, Gauge } from "lucide-react";
 
 type Device = {name:string;vendor:string;role:string;site:string;mgmt_ip:string;status:string};
+type DeploymentJob = {
+  id: string;
+  status: string;
+  deployment: {type:string;name:string;payload:Record<string, unknown>}
+};
 
 export default function Dashboard() {
   const [devices,setDevices] = useState<Device[]>([]);
+  const [jobs,setJobs] = useState<DeploymentJob[]>([]);
   const [logs,setLogs] = useState("Waiting for deployment...");
+  const [deploymentType,setDeploymentType] = useState("vlan_vni");
+  const [changeName,setChangeName] = useState("DC1-VLAN-10010");
   const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-  useEffect(() => { fetch(`${api}/api/devices`).then(r=>r.json()).then(setDevices).catch(()=>setDevices([])); },[api]);
+  useEffect(() => {
+    fetch(`${api}/api/devices`).then(r=>r.json()).then(setDevices).catch(()=>setDevices([]));
+    fetch(`${api}/api/deployments`).then(r=>r.json()).then(setJobs).catch(()=>setJobs([]));
+  },[api]);
   async function submit() {
     setLogs("POST /api/deployments\nPre-check: BGP/OSPF/VXLAN healthy");
-    const r = await fetch(`${api}/api/deployments`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({type:"vlan_vni",name:"VLAN-10010",payload:{vni:10010}})});
-    if(r.ok) setLogs(l=>l+"\nChange queued for approval\nAudit entry created");
+    const payload = deploymentType === "vlan_vni" ? {vni:10010} : {change:changeName};
+    const r = await fetch(`${api}/api/deployments`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-role":"net_admin","x-user":"admin"},
+      body:JSON.stringify({type:deploymentType,name:changeName,payload})
+    });
+    if(r.ok) {
+      const job = await r.json() as DeploymentJob;
+      setJobs(current=>[job,...current]);
+      setLogs(l=>l+"\nChange queued for approval\nAudit entry created");
+      const wsUrl = api.replace(/^http/, "ws");
+      const socket = new WebSocket(`${wsUrl}/ws/jobs/${job.id}`);
+      socket.onmessage = event => {
+        const message = JSON.parse(event.data) as {level:string;message:string};
+        setLogs(l=>l+`\n[${message.level}] ${message.message}`);
+      };
+      socket.onclose = () => setLogs(l=>l+"\nExecution stream closed");
+    } else {
+      setLogs(l=>l+"\nSubmission failed: "+r.status);
+    }
+  }
+  async function approve(jobId:string) {
+    const r = await fetch(`${api}/api/deployments/${jobId}/approve`,{method:"POST"});
+    if(r.ok) {
+      const job = await r.json() as DeploymentJob;
+      setJobs(current=>current.map(item=>item.id===jobId ? job : item));
+      setLogs(l=>l+`\n[success] ${jobId} approved and executing`);
+    }
   }
   return <div className="shell">
     <aside className="sidebar"><div className="brand">NACT // OPS</div><nav className="nav">
@@ -34,10 +71,23 @@ export default function Dashboard() {
         <tbody>{devices.slice(0,12).map(d=><tr key={d.name}><td>{d.name}</td><td>{d.vendor}</td><td>{d.role}</td><td>{d.site}</td><td>{d.mgmt_ip}</td><td><span className="badge">{d.status}</span></td></tr>)}</tbody></table>
       </div>
       <div className="card section"><h2>GitOps deployment</h2><div className="form-row">
-        <select><option>Provision VLAN/VNI</option><option>BGP EVPN peer</option><option>OSPF peer</option><option>Firewall rule</option><option>LB VIP</option></select>
-        <input aria-label="Change name" defaultValue="DC1-VLAN-10010"/>
+        <select value={deploymentType} onChange={event=>setDeploymentType(event.target.value)}>
+          <option value="vlan_vni">Provision VLAN/VNI</option>
+          <option value="bgp">BGP EVPN peer</option>
+          <option value="ospf">OSPF peer</option>
+          <option value="firewall">Firewall rule</option>
+          <option value="lb">LB VIP</option>
+        </select>
+        <input aria-label="Change name" value={changeName} onChange={event=>setChangeName(event.target.value)} />
         <button onClick={submit}>Submit change</button>
       </div></div>
+      {jobs.length > 0 && <div className="card section"><h2>Deployment queue</h2>
+        <table><thead><tr><th>Job</th><th>Change</th><th>Type</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>{jobs.map(job=><tr key={job.id}><td>{job.id}</td><td>{job.deployment.name}</td><td>{job.deployment.type}</td>
+            <td><span className="badge">{job.status}</span></td><td>{job.status==="pending_approval" &&
+              <button className="approve" onClick={()=>approve(job.id)}>Approve</button>}</td></tr>)}</tbody>
+        </table>
+      </div>}
       <div className="card section"><h2><Terminal size={16}/> Live execution terminal</h2><pre className="terminal">{logs}</pre></div>
     </main>
   </div>;

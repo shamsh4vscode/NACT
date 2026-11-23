@@ -9,6 +9,7 @@ import os, asyncio
 
 APP = FastAPI(title="NACT Network & Security Operations", version="1.0.0")
 APP.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+app = APP
 
 USERS = {
     "noc": {"password": pbkdf2_sha256.hash("noc-password"), "role": "noc_operator"},
@@ -89,6 +90,16 @@ def create_deployment(body: Deployment, x_role: str = Header(default="net_admin"
     job_id = f"job-{len(JOBS)+1}"
     JOBS[job_id] = {"id": job_id, "status": "pending_approval", "deployment": body.model_dump()}
     AUDIT.append({"job_id": job_id, "action": "submitted", "actor": ctx["username"], "at": datetime.utcnow().isoformat()})
+    return JOBS[job_id]
+
+@APP.get("/api/deployments")
+def deployments():
+    return list(JOBS.values())
+
+@APP.get("/api/deployments/{job_id}")
+def deployment(job_id: str):
+    if job_id not in JOBS:
+        raise HTTPException(404, "Job not found")
     return JOBS[job_id]
 
 @APP.post("/api/deployments/{job_id}/approve")
