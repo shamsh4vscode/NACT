@@ -1,0 +1,87 @@
+name: nact
+prefix: ""
+mgmt:
+  network: nact-management
+  ipv4-subnet: 172.20.20.0/24
+
+topology:
+  nodes:
+    spine-01:
+      kind: linux
+      image: frrouting/frr:latest
+      mgmt-ipv4: 172.20.20.11
+      binds: [./configs/spine-01/frr.conf:/etc/frr/frr.conf:ro, ./configs/spine-01/daemons:/etc/frr/daemons:ro]
+    spine-02:
+      kind: linux
+      image: frrouting/frr:latest
+      mgmt-ipv4: 172.20.20.12
+      binds: [./configs/spine-02/frr.conf:/etc/frr/frr.conf:ro, ./configs/spine-02/daemons:/etc/frr/daemons:ro]
+    leaf-01:
+      kind: linux
+      image: frrouting/frr:latest
+      mgmt-ipv4: 172.20.20.13
+      binds: [./configs/leaf-01/frr.conf:/etc/frr/frr.conf:ro, ./configs/leaf-01/daemons:/etc/frr/daemons:ro]
+    leaf-02:
+      kind: linux
+      image: frrouting/frr:latest
+      mgmt-ipv4: 172.20.20.14
+      binds: [./configs/leaf-02/frr.conf:/etc/frr/frr.conf:ro, ./configs/leaf-02/daemons:/etc/frr/daemons:ro]
+    leaf-03:
+      kind: linux
+      image: frrouting/frr:latest
+      mgmt-ipv4: 172.20.20.15
+      binds: [./configs/leaf-03/frr.conf:/etc/frr/frr.conf:ro, ./configs/leaf-03/daemons:/etc/frr/daemons:ro]
+    leaf-04:
+      kind: linux
+      image: frrouting/frr:latest
+      mgmt-ipv4: 172.20.20.16
+      binds: [./configs/leaf-04/frr.conf:/etc/frr/frr.conf:ro, ./configs/leaf-04/daemons:/etc/frr/daemons:ro]
+    border-01:
+      kind: linux
+      image: frrouting/frr:latest
+      mgmt-ipv4: 172.20.20.17
+      binds: [./configs/border-01/frr.conf:/etc/frr/frr.conf:ro, ./configs/border-01/daemons:/etc/frr/daemons:ro]
+    border-02:
+      kind: linux
+      image: frrouting/frr:latest
+      mgmt-ipv4: 172.20.20.18
+      binds: [./configs/border-02/frr.conf:/etc/frr/frr.conf:ro, ./configs/border-02/daemons:/etc/frr/daemons:ro]
+    wan-rtr-01:
+      kind: linux
+      image: frrouting/frr:latest
+      mgmt-ipv4: 172.20.20.19
+      binds: [./configs/wan-rtr-01/frr.conf:/etc/frr/frr.conf:ro, ./configs/wan-rtr-01/daemons:/etc/frr/daemons:ro]
+    wan-rtr-02:
+      kind: linux
+      image: frrouting/frr:latest
+      mgmt-ipv4: 172.20.20.20
+      binds: [./configs/wan-rtr-02/frr.conf:/etc/frr/frr.conf:ro, ./configs/wan-rtr-02/daemons:/etc/frr/daemons:ro]
+    host-01:
+      kind: linux
+      image: alpine:3.20
+      mgmt-ipv4: 172.20.20.21
+      exec: [sh -c "ip addr add 10.10.10.1/24 dev eth1 || true"]
+    host-02:
+      kind: linux
+      image: alpine:3.20
+      mgmt-ipv4: 172.20.20.22
+      exec: [sh -c "ip addr add 10.10.10.2/24 dev eth1 || true"]
+  links:
+    - endpoints: ["spine-01:eth1","leaf-01:eth1"]
+    - endpoints: ["spine-01:eth2","leaf-02:eth1"]
+    - endpoints: ["spine-01:eth3","leaf-03:eth1"]
+    - endpoints: ["spine-01:eth4","leaf-04:eth1"]
+    - endpoints: ["spine-02:eth1","leaf-01:eth2"]
+    - endpoints: ["spine-02:eth2","leaf-02:eth2"]
+    - endpoints: ["spine-02:eth3","leaf-03:eth2"]
+    - endpoints: ["spine-02:eth4","leaf-04:eth2"]
+    - endpoints: ["leaf-01:eth3","border-01:eth1"]
+    - endpoints: ["leaf-02:eth3","border-01:eth2"]
+    - endpoints: ["leaf-03:eth3","border-02:eth1"]
+    - endpoints: ["leaf-04:eth3","border-02:eth2"]
+    - endpoints: ["border-01:eth3","wan-rtr-01:eth1"]
+    - endpoints: ["border-01:eth4","wan-rtr-02:eth1"]
+    - endpoints: ["border-02:eth3","wan-rtr-01:eth2"]
+    - endpoints: ["border-02:eth4","wan-rtr-02:eth2"]
+    - endpoints: ["leaf-01:eth4","host-01:eth1"]
+    - endpoints: ["leaf-03:eth4","host-02:eth1"]
