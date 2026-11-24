@@ -8,54 +8,64 @@ topology:
   nodes:
     spine-01:
       kind: linux
-      image: frrouting/frr:latest
+      image: nact/frr-ssh:latest
       mgmt-ipv4: 172.20.20.11
-      binds: [./configs/spine-01/frr.conf:/etc/frr/frr.conf:ro, ./configs/spine-01/daemons:/etc/frr/daemons:ro]
+      binds: [./configs/spine-01/frr.conf:/etc/frr/frr.conf:ro, ./configs/spine-01/daemons:/etc/frr/daemons:ro, ./configs/authorized_keys:/run/nact/authorized_keys:ro]
+      exec: [sh -c "cp /run/nact/authorized_keys /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys && ssh-keygen -A && /usr/sbin/sshd"]
     spine-02:
       kind: linux
-      image: frrouting/frr:latest
+      image: nact/frr-ssh:latest
       mgmt-ipv4: 172.20.20.12
-      binds: [./configs/spine-02/frr.conf:/etc/frr/frr.conf:ro, ./configs/spine-02/daemons:/etc/frr/daemons:ro]
+      binds: [./configs/spine-02/frr.conf:/etc/frr/frr.conf:ro, ./configs/spine-02/daemons:/etc/frr/daemons:ro, ./configs/authorized_keys:/run/nact/authorized_keys:ro]
+      exec: [sh -c "cp /run/nact/authorized_keys /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys && ssh-keygen -A && /usr/sbin/sshd"]
     leaf-01:
       kind: linux
-      image: frrouting/frr:latest
+      image: nact/frr-ssh:latest
       mgmt-ipv4: 172.20.20.13
-      binds: [./configs/leaf-01/frr.conf:/etc/frr/frr.conf:ro, ./configs/leaf-01/daemons:/etc/frr/daemons:ro]
+      binds: [./configs/leaf-01/frr.conf:/etc/frr/frr.conf:ro, ./configs/leaf-01/daemons:/etc/frr/daemons:ro, ./configs/authorized_keys:/run/nact/authorized_keys:ro]
+      exec: [sh -c "cp /run/nact/authorized_keys /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys && ssh-keygen -A && /usr/sbin/sshd"]
     leaf-02:
       kind: linux
-      image: frrouting/frr:latest
+      image: nact/frr-ssh:latest
       mgmt-ipv4: 172.20.20.14
-      binds: [./configs/leaf-02/frr.conf:/etc/frr/frr.conf:ro, ./configs/leaf-02/daemons:/etc/frr/daemons:ro]
+      binds: [./configs/leaf-02/frr.conf:/etc/frr/frr.conf:ro, ./configs/leaf-02/daemons:/etc/frr/daemons:ro, ./configs/authorized_keys:/run/nact/authorized_keys:ro]
+      exec: [sh -c "cp /run/nact/authorized_keys /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys && ssh-keygen -A && /usr/sbin/sshd"]
     leaf-03:
       kind: linux
-      image: frrouting/frr:latest
+      image: nact/frr-ssh:latest
       mgmt-ipv4: 172.20.20.15
-      binds: [./configs/leaf-03/frr.conf:/etc/frr/frr.conf:ro, ./configs/leaf-03/daemons:/etc/frr/daemons:ro]
+      binds: [./configs/leaf-03/frr.conf:/etc/frr/frr.conf:ro, ./configs/leaf-03/daemons:/etc/frr/daemons:ro, ./configs/authorized_keys:/run/nact/authorized_keys:ro]
+      exec: [sh -c "cp /run/nact/authorized_keys /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys && ssh-keygen -A && /usr/sbin/sshd"]
     leaf-04:
       kind: linux
-      image: frrouting/frr:latest
+      image: nact/frr-ssh:latest
       mgmt-ipv4: 172.20.20.16
-      binds: [./configs/leaf-04/frr.conf:/etc/frr/frr.conf:ro, ./configs/leaf-04/daemons:/etc/frr/daemons:ro]
+      binds: [./configs/leaf-04/frr.conf:/etc/frr/frr.conf:ro, ./configs/leaf-04/daemons:/etc/frr/daemons:ro, ./configs/authorized_keys:/run/nact/authorized_keys:ro]
+      exec: [sh -c "cp /run/nact/authorized_keys /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys && ssh-keygen -A && /usr/sbin/sshd"]
     border-01:
       kind: linux
-      image: frrouting/frr:latest
+      image: nact/frr-ssh:latest
       mgmt-ipv4: 172.20.20.17
-      binds: [./configs/border-01/frr.conf:/etc/frr/frr.conf:ro, ./configs/border-01/daemons:/etc/frr/daemons:ro]
+      binds: [./configs/border-01/frr.conf:/etc/frr/frr.conf:ro, ./configs/border-01/daemons:/etc/frr/daemons:ro, ./configs/authorized_keys:/run/nact/authorized_keys:ro]
+      exec: [sh -c "cp /run/nact/authorized_keys /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys && ssh-keygen -A && /usr/sbin/sshd"]
     border-02:
       kind: linux
-      image: frrouting/frr:latest
+      image: nact/frr-ssh:latest
       mgmt-ipv4: 172.20.20.18
-      binds: [./configs/border-02/frr.conf:/etc/frr/frr.conf:ro, ./configs/border-02/daemons:/etc/frr/daemons:ro]
+      binds: [./configs/border-02/frr.conf:/etc/frr/frr.conf:ro, ./configs/border-02/daemons:/etc/frr/daemons:ro, ./configs/authorized_keys:/run/nact/authorized_keys:ro]
+      exec: [sh -c "cp /run/nact/authorized_keys /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys && ssh-keygen -A && /usr/sbin/sshd"]
     wan-rtr-01:
       kind: linux
-      image: frrouting/frr:latest
+      image: nact/frr-ssh:latest
       mgmt-ipv4: 172.20.20.19
-      binds: [./configs/wan-rtr-01/frr.conf:/etc/frr/frr.conf:ro, ./configs/wan-rtr-01/daemons:/etc/frr/daemons:ro]
+      binds: [./configs/wan-rtr-01/frr.conf:/etc/frr/frr.conf:ro, ./configs/wan-rtr-01/daemons:/etc/frr/daemons:ro, ./configs/authorized_keys:/run/nact/authorized_keys:ro]
+      exec: [sh -c "cp /run/nact/authorized_keys /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys && ssh-keygen -A && /usr/sbin/sshd"]
     wan-rtr-02:
       kind: linux
-      image: frrouting/frr:latest
+      image: nact/frr-ssh:latest
       mgmt-ipv4: 172.20.20.20
-      binds: [./configs/wan-rtr-02/frr.conf:/etc/frr/frr.conf:ro, ./configs/wan-rtr-02/daemons:/etc/frr/daemons:ro]
+      binds: [./configs/wan-rtr-02/frr.conf:/etc/frr/frr.conf:ro, ./configs/wan-rtr-02/daemons:/etc/frr/daemons:ro, ./configs/authorized_keys:/run/nact/authorized_keys:ro]
+      exec: [sh -c "cp /run/nact/authorized_keys /root/.ssh/authorized_keys && chmod 600 /root/.ssh/authorized_keys && ssh-keygen -A && /usr/sbin/sshd"]
     host-01:
       kind: linux
       image: alpine:3.20

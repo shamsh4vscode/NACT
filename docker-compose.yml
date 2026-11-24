@@ -31,26 +31,53 @@ services:
     ports: ["8200:8200"]
     cap_add: [IPC_LOCK]
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: start-dev --import-realm --hostname http://localhost:8080 --hostname-strict=false
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-nact-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-keycloak-dev-password}
+      KC_HTTP_ENABLED: "true"
+    ports: ["8080:8080"]
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+      - ./keycloak/nact-realm.json:/opt/keycloak/data/import/nact-realm.json:ro
+
   backend:
     build: ./backend
     env_file: [.env]
     environment:
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      OIDC_PUBLIC_ISSUER: http://localhost:8080/realms/nact
+      OIDC_INTERNAL_ISSUER: http://keycloak:8080/realms/nact
+      OIDC_CLIENT_ID: nact-api
+      OIDC_CLIENT_SECRET: nact-api-dev-secret
+      OIDC_REDIRECT_URI: http://localhost:8000/api/auth/oidc/callback
+      SESSION_SECRET: ${SESSION_SECRET:-local-development-session-secret-change-me}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
+      FRONTEND_URL: http://localhost:3000
+      FRONTEND_ORIGIN: http://localhost:3000
+      NACT_DEVICE_MODE: ${NACT_DEVICE_MODE:-simulated}
+      NACT_DEVICE_SSH_KEY_PATH: /run/nact/secrets/id_ed25519
+      NACT_DEVICE_KNOWN_HOSTS_PATH: /run/nact/secrets/known_hosts
     ports: ["8000:8000"]
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_started }
       vault: { condition: service_started }
+      keycloak: { condition: service_started }
     volumes:
       - ./gitops-infra:/gitops-infra
       - ./lab-topology:/lab-topology
+      - ./lab-topology/.secrets:/run/nact/secrets:ro
+    networks: [default, management]
 
   celery-worker:
     build: ./backend
     command: celery -A workers.celery_app worker --loglevel=INFO -Q queue_rs,queue_fw,queue_lb,queue_iac
     env_file: [.env]
     environment:
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
     depends_on:
       backend: { condition: service_started }
       redis: { condition: service_started }
@@ -70,5 +97,46 @@ services:
     volumes:
       - ./simulators:/app
 
+  telemetry-exporter:
+    build: ./backend
+    command: python telemetry_exporter.py
+    environment:
+      NACT_DEVICE_SSH_KEY_PATH: /run/nact/secrets/id_ed25519
+      NACT_DEVICE_KNOWN_HOSTS_PATH: /run/nact/secrets/known_hosts
+    volumes:
+      - ./lab-topology/.secrets:/run/nact/secrets:ro
+    ports: ["9108:9108"]
+    networks: [default, management]
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.enable-lifecycle
+    ports: ["9090:9090"]
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    depends_on: [telemetry-exporter, alertmanager]
+
+  alertmanager:
+    image: prom/alertmanager:v0.28.0
+    command: --config.file=/etc/alertmanager/alertmanager.yml
+    ports: ["9093:9093"]
+    volumes:
+      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+
 volumes:
   postgres_data:
+  keycloak_data:
+  prometheus_data:
+
+networks:
+  management:
+    name: nact-management
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.20.0/24

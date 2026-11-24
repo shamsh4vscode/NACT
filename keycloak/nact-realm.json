@@ -1,0 +1,80 @@
+{
+  "realm": "nact",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": false,
+  "duplicateEmailsAllowed": false,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": false,
+  "browserFlow": "browser",
+  "registrationFlow": "registration",
+  "directGrantFlow": "direct grant",
+  "resetCredentialsFlow": "reset credentials",
+  "roles": {
+    "realm": [
+      { "name": "net_admin" },
+      { "name": "noc_operator" },
+      { "name": "sec_engineer" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "nact-api",
+      "name": "NACT local development",
+      "enabled": true,
+      "secret": "nact-api-dev-secret",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "redirectUris": ["http://localhost:8000/api/auth/oidc/callback"],
+      "webOrigins": ["http://localhost:3000"],
+      "defaultClientScopes": ["web-origins", "profile", "email", "roles"],
+      "protocolMappers": [
+        {
+          "name": "NACT API audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "nact-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "nact-admin",
+      "enabled": true,
+      "email": "nact-admin@example.local",
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [{ "type": "password", "value": "admin-dev-password", "temporary": false }],
+      "realmRoles": ["net_admin"]
+    },
+    {
+      "username": "nact-noc",
+      "enabled": true,
+      "email": "nact-noc@example.local",
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [{ "type": "password", "value": "noc-dev-password", "temporary": false }],
+      "realmRoles": ["noc_operator"]
+    },
+    {
+      "username": "nact-security",
+      "enabled": true,
+      "email": "nact-security@example.local",
+      "emailVerified": true,
+      "requiredActions": [],
+      "credentials": [{ "type": "password", "value": "security-dev-password", "temporary": false }],
+      "realmRoles": ["sec_engineer"]
+    }
+  ]
+}

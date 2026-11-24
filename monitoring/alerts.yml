@@ -1,0 +1,18 @@
+groups:
+  - name: nact-network
+    rules:
+      - alert: NactLabDeviceUnreachable
+        expr: nact_device_up == 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "NACT lab device {{ $labels.device }} is unreachable"
+          description: "The telemetry exporter cannot reach this FRR device over SSH."
+      - alert: NactNoEstablishedBgpPeers
+        expr: nact_bgp_sessions_established == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "NACT lab device {{ $labels.device }} has no established BGP peers"
