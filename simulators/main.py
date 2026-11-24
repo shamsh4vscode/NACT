@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 import random
 
@@ -21,6 +22,30 @@ class Change(BaseModel):
 
 @app.get("/api/health")
 def health(): return {"status":"healthy","vendors":list(devices)}
+
+@app.get("/", response_class=HTMLResponse)
+def simulator_dashboard():
+    vendor_links = "".join(
+        f'<li><a href="/api/{vendor}">{details["type"]} ({vendor})</a></li>'
+        for vendor, details in devices.items()
+    )
+    return f"""<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NACT Vendor Simulators</title>
+    <style>
+      body {{ max-width: 760px; margin: 3rem auto; padding: 0 1rem; background: #070b14; color: #dbe7f5; font: 16px system-ui, sans-serif; }}
+      a {{ color: #67e8f9; }} li {{ margin: .8rem 0; }} .status {{ color: #34d399; }}
+    </style>
+  </head>
+  <body>
+    <h1>NACT Vendor Simulators</h1>
+    <p class="status">Service healthy</p>
+    <p>These are demo APIs, not vendor production systems.</p>
+    <ul>{vendor_links}</ul>
+    <p><a href="/docs">Interactive API documentation</a> · <a href="/api/health">Health JSON</a></p>
+  </body>
+</html>"""
 
 @app.get("/api/{vendor}")
 def get_vendor(vendor: str):

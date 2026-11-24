@@ -31,8 +31,14 @@
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": false,
-      "redirectUris": ["http://localhost:8000/api/auth/oidc/callback"],
-      "webOrigins": ["http://localhost:3000"],
+      "redirectUris": [
+        "http://localhost:8000/api/auth/oidc/callback",
+        "https://*-8000.app.github.dev/api/auth/oidc/callback"
+      ],
+      "webOrigins": [
+        "http://localhost:3000",
+        "https://*.app.github.dev"
+      ],
       "defaultClientScopes": ["web-origins", "profile", "email", "roles"],
       "protocolMappers": [
         {
@@ -54,6 +60,8 @@
       "enabled": true,
       "email": "nact-admin@example.local",
       "emailVerified": true,
+      "firstName": "NACT",
+      "lastName": "Admin",
       "requiredActions": [],
       "credentials": [{ "type": "password", "value": "admin-dev-password", "temporary": false }],
       "realmRoles": ["net_admin"]
@@ -63,6 +71,8 @@
       "enabled": true,
       "email": "nact-noc@example.local",
       "emailVerified": true,
+      "firstName": "NACT",
+      "lastName": "NOC",
       "requiredActions": [],
       "credentials": [{ "type": "password", "value": "noc-dev-password", "temporary": false }],
       "realmRoles": ["noc_operator"]
@@ -72,6 +82,8 @@
       "enabled": true,
       "email": "nact-security@example.local",
       "emailVerified": true,
+      "firstName": "NACT",
+      "lastName": "Security",
       "requiredActions": [],
       "credentials": [{ "type": "password", "value": "security-dev-password", "temporary": false }],
       "realmRoles": ["sec_engineer"]

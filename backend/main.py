@@ -29,6 +29,10 @@ APP = FastAPI(title="NACT Network & Security Operations", version="1.0.0")
 APP.add_middleware(
     CORSMiddleware,
     allow_origins=[os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")],
+    allow_origin_regex=os.getenv(
+        "FRONTEND_ORIGIN_REGEX",
+        r"https://[a-z0-9-]+-3000\.app\.github\.dev",
+    ),
     allow_methods=["*"],
     allow_headers=["Authorization", "Content-Type"],
     allow_credentials=True,
@@ -298,6 +302,7 @@ def create_deployment(body: Deployment, user: dict = Depends(get_current_user)):
             deployment=body.model_dump(),
         )
         session.add(job)
+        session.flush()
         session.add(AuditEvent(job_id=job_id, action="submitted", actor=user["username"]))
     return {"id": job_id, "status": "pending_approval", "deployment": body.model_dump()}
 

@@ -5,8 +5,9 @@ body { margin: 0; background: #070b14; color: #dbe7f5; font-family: Inter, ui-sa
 .sidebar { border-right: 1px solid #1d2939; padding: 20px 14px; background: #0b111d; }
 .brand { font-weight: 800; letter-spacing: .12em; color: #67e8f9; padding: 8px 10px 28px; }
 .nav { display: grid; gap: 6px; }
-.nav a { color: #91a4bb; text-decoration: none; padding: 10px 12px; border-radius: 8px; display: flex; gap: 10px; }
-.nav a.active, .nav a:hover { background: #132137; color: #fff; }
+.nav-item { width:100%; text-align:left; color:#91a4bb; background:transparent; border:0; padding:10px 12px; border-radius:8px; display:flex; align-items:center; gap:10px; white-space:nowrap; }
+.nav-item.active, .nav-item:hover { background:#132137; color:#fff; }
+.nav-item:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible { outline:2px solid #67e8f9; outline-offset:2px; }
 .main { padding: 24px 28px; min-width: 0; }
 .top { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
 .top h1 { margin:0; font-size:22px; }
@@ -25,4 +26,19 @@ select,button,input { background:#111a29; color:#dbe7f5; border:1px solid #26364
 button { background:#0e7490; border:0; cursor:pointer; }
 button.approve { padding:6px 10px; }
 .terminal { background:#05080d; border:1px solid #26364a; border-radius:8px; min-height:130px; padding:12px; font-family:monospace; font-size:12px; color:#34d399; }
-@media(max-width:900px){.shell{grid-template-columns:1fr}.sidebar{display:none}.grid{grid-template-columns:repeat(2,1fr)}.form-row{grid-template-columns:1fr}}
+.error { color:#fca5a5; }
+.section a { color:#67e8f9; }
+.simulator-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; padding-left:20px; }
+.section { overflow-x:auto; }
+@media(max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .sidebar{display:block; padding:12px; border-right:0; border-bottom:1px solid #1d2939}
+  .brand{padding:4px 8px 12px}
+  .nav{display:flex; overflow-x:auto; gap:4px}
+  .nav-item{width:auto; flex:0 0 auto}
+  .main{padding:18px 14px}
+  .top{align-items:flex-start; gap:12px}
+  .top h1{font-size:18px}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .form-row{grid-template-columns:1fr}
+}

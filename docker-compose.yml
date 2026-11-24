@@ -33,7 +33,7 @@ services:
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.0
-    command: start-dev --import-realm --hostname http://localhost:8080 --hostname-strict=false
+    command: ["start-dev", "--import-realm", "--hostname", "${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}", "--hostname-strict=false"]
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-nact-admin}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-keycloak-dev-password}
@@ -48,15 +48,16 @@ services:
     env_file: [.env]
     environment:
       DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      OIDC_PUBLIC_ISSUER: http://localhost:8080/realms/nact
+      OIDC_PUBLIC_ISSUER: ${KEYCLOAK_PUBLIC_URL:-http://localhost:8080}/realms/nact
       OIDC_INTERNAL_ISSUER: http://keycloak:8080/realms/nact
       OIDC_CLIENT_ID: nact-api
       OIDC_CLIENT_SECRET: nact-api-dev-secret
-      OIDC_REDIRECT_URI: http://localhost:8000/api/auth/oidc/callback
+      OIDC_REDIRECT_URI: ${API_PUBLIC_URL:-http://localhost:8000}/api/auth/oidc/callback
       SESSION_SECRET: ${SESSION_SECRET:-local-development-session-secret-change-me}
       SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
-      FRONTEND_URL: http://localhost:3000
-      FRONTEND_ORIGIN: http://localhost:3000
+      FRONTEND_URL: ${FRONTEND_PUBLIC_URL:-http://localhost:3000}
+      FRONTEND_ORIGIN: ${FRONTEND_PUBLIC_URL:-http://localhost:3000}
+      FRONTEND_ORIGIN_REGEX: ${FRONTEND_ORIGIN_REGEX:-https://[a-z0-9-]+-3000\.app\.github\.dev}
       NACT_DEVICE_MODE: ${NACT_DEVICE_MODE:-simulated}
       NACT_DEVICE_SSH_KEY_PATH: /run/nact/secrets/id_ed25519
       NACT_DEVICE_KNOWN_HOSTS_PATH: /run/nact/secrets/known_hosts
